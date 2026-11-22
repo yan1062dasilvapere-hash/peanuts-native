@@ -134,7 +134,14 @@ HLE_FORCE("_ZN2nn7account8OpenUserEPNS0_10UserHandleERKNS0_3UidE", "open user; t
     h->v[0] = uid->v[0]; h->v[1] = uid->v[1]; h->v[2] = HANDLE_MAGIC; return RES_OK;
 }
 HLE_FORCE("_ZN2nn7account9GetUserIdEPNS0_3UidERKNS0_10UserHandleE", "gets the Uid from the handle", Result, h_acc_GetUserId, Uid *out, const UserHandle *h) {
-    if (h->v[2] != HANDLE_MAGIC) die("account::GetUserId: the handle was not issued by the host (%#llx)", h->v[2]);
+        if (h->v[2] != HANDLE_MAGIC) {
+        static int warned;
+        users();
+        Uid held = {{h->v[0], h->v[1]}};
+        if (!warned) { warned = 1; LOG("[RED] account::GetUserId: handle not issued by the host (%#llx %#llx %#llx)", (unsigned long long)h->v[0], (unsigned long long)h->v[1], (unsigned long long)h->v[2]); }
+        *out = user_index(&held) >= 0 ? held : g_users[g_def].uid;
+        return RES_OK;
+        }
     out->v[0] = h->v[0]; out->v[1] = h->v[1]; return RES_OK;
 }
 // nn::account::Nickname = struct { char name[33]; }, UTF-8
