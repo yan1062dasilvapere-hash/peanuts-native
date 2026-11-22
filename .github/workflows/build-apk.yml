@@ -1,0 +1,56 @@
+name: build-apk
+
+on:
+  workflow_dispatch:
+
+jobs:
+  apk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.14'
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Ferramentas do sistema
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zsh ninja-build cmake
+
+      - name: Android SDK e NDK
+        run: |
+          SDKM="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" "platforms;android-36" "ndk;28.2.13676358"
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/28.2.13676358" >> "$GITHUB_ENV"
+
+      - name: Monta o empacotador do celular
+        run: |
+          zsh android/ondevice/build.sh "$RUNNER_TEMP/work"
+
+      - name: Compila o APK
+        working-directory: android/app
+        run: |
+          ./gradlew -PnxApp=peanuts -PnxAppId=peanutsfix -PnxGames=0100C49025D3E000 -PnxPackStage="$RUNNER_TEMP/work/stage" apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: peanuts-fc27-fix-apk
+          path: android/app/out/*.apk
+          if-no-files-found: error
