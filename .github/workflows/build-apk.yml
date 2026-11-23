@@ -42,7 +42,7 @@ jobs:
 
       - name: Monta o empacotador do celular
         run: |
-          zsh android/ondevice/build.sh "$RUNNER_TEMP/work"
+          zsh peanuts/scripts/ondevice-stage.sh "$RUNNER_TEMP/work"
 
       - name: Compila o APK
         working-directory: android/app
