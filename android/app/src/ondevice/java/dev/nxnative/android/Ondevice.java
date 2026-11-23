@@ -742,6 +742,8 @@ final class Ondevice {
             line.setBackgroundColor(Ui.col(a, R.color.bn_card_stroke));
             Ui.add(box, line, 20, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(1)));
             Ui.add(box, Ui.button(a, "Share build log", Ui.Kind.QUIET, v -> { d[0].dismiss(); dev.peanuts.ui.BuildLogUi.share(a, j.titleId(), j.name()); }), 14, Ui.wrap());   // PEANUTS: Share build log
+                        Button imp = Ui.button(a, "Import pack…", Ui.Kind.SOFT, v -> { d[0].dismiss(); PackUi.importPick(a, a.cardFor(j.dump(), j.titleId())); });
+            imp.setEnabled(!running); Ui.add(box, imp, 10, Ui.wrap());
             if (running) Ui.add(box, Ui.small(a, "Pause first to forget or delete."), 14);
             Button f = Ui.button(a, "Forget this job…", Ui.Kind.QUIET, v -> { d[0].dismiss(); forget(); });
             f.setEnabled(!running);
